@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    body {
+        @apply bg-background text-base antialiased text-primary dark:bg-n-2;
+    }
+}
+
+@layer utilities {
+    .text-primary {
+        @apply text-[#0B0B0F] dark:text-[#FFFFFF];
+    }
+
+    .text-secondary {
+        @apply text-[#3F3F46] dark:text-[#D4D4D8];
+    }
+
+    .text-muted {
+        @apply text-[#6B7280] dark:text-[#A1A1AA];
+    }
+
+    .text-brand {
+        @apply text-white;
+    }
+}

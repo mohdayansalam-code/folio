@@ -1,0 +1,26 @@
+﻿
+  build_check.log:22:sx
+> build_check.log:23:Module not 
+found: Can't resolve 
+  build_check.log:24:'@/components
+/Details'
+  build_check.log:25:
+  build_check.log:36:x.tsx
+> build_check.log:37:Module not 
+found: Can't resolve 
+  build_check.log:38:'@/components
+/Details'
+  build_check.log:39:
+  build_check.log:48:t/index.tsx
+> build_check.log:49:Module not 
+found: Can't resolve 
+  build_check.log:50:'recharts'
+  build_check.log:51:
+  build_check.log:62:t/index.tsx
+> build_check.log:63:Module not 
+found: Can't resolve 
+  build_check.log:64:'@chakra-ui/c
+olor-mode'
+  build_check.log:65:
+
+
