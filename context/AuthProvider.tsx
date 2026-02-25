@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useRef } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase";
 
 type AuthContextType = {
@@ -11,47 +11,57 @@ const AuthContext = createContext<AuthContextType>({
     loading: true,
 });
 
+// -- Singleton Auth State System --
+let globalSession: any = null;
+let globalLoading = true;
+let isInitialized = false;
+
+const subscribers = new Set<(session: any, loading: boolean) => void>();
+
+const notifySubscribers = () => {
+    subscribers.forEach((sub) => sub(globalSession, globalLoading));
+};
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-    const [session, setSession] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
-    const initRef = useRef(false);
+    const [session, setSession] = useState<any>(globalSession);
+    const [loading, setLoading] = useState<boolean>(globalLoading);
 
     useEffect(() => {
-        let mounted = true;
-
-        const init = async () => {
-            try {
-                const { data, error } = await supabase.auth.getSession();
-                if (error) throw error;
-                if (mounted) {
-                    setSession(data.session);
-                }
-            } catch (error) {
-                console.error("Auth initialization error:", error);
-            } finally {
-                if (mounted) {
-                    setLoading(false);
-                }
-            }
+        const updateState = (newSession: any, newLoading: boolean) => {
+            setSession(newSession);
+            setLoading(newLoading);
         };
 
-        if (!initRef.current) {
-            initRef.current = true;
-            init();
+        // Attach strictly on mount to receive future updates
+        subscribers.add(updateState);
+
+        if (!isInitialized) {
+            isInitialized = true;
+
+            // 1. Fetch exactly once across the whole JS execution context
+            supabase.auth.getSession().then(({ data: { session }, error }) => {
+                if (error) {
+                    console.error("Auth initialization error:", error);
+                }
+                globalSession = session || null;
+                globalLoading = false;
+                notifySubscribers();
+            });
+
+            // 2. Attach observer exactly once across the whole JS execution context
+            supabase.auth.onAuthStateChange((_event, authSession) => {
+                globalSession = authSession || null;
+                globalLoading = false;
+                notifySubscribers();
+            });
+        } else {
+            // Already initialized (e.g., Strict Mode second render)
+            // Immediately sync state since initial setup might have missed our subscription
+            updateState(globalSession, globalLoading);
         }
 
-        const { data: listener } = supabase.auth.onAuthStateChange(
-            (_event, session) => {
-                if (mounted) {
-                    setSession(session);
-                    setLoading(false);
-                }
-            }
-        );
-
         return () => {
-            mounted = false;
-            listener.subscription.unsubscribe();
+            subscribers.delete(updateState);
         };
     }, []);
 

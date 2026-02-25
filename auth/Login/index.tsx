@@ -16,8 +16,8 @@ const SignIn = ({ onRecover, onLoginQr }: SignInProps) => {
     return (
         <>
             <form action="" onSubmit={() => console.log("Submit")}>
-                <div className="mb-1 text-h1">Sign in</div>
-                <div className="mb-12 text-sm text-secondary /50">
+                <div className="mb-1 text-h1 text-n-7 dark:text-white">Sign in</div>
+                <div className="mb-12 text-sm text-n-7 dark:text-white/70">
                     Enter your account details or use QR code
                 </div>
                 <Field
@@ -39,14 +39,14 @@ const SignIn = ({ onRecover, onLoginQr }: SignInProps) => {
                     onChange={(e: any) => setPassword(e.target.value)}
                     required
                 />
-                <div className="flex justify-between items-center mb-6.5">
+                <div className="flex justify-between items-center mb-6.5 text-n-7 dark:text-white">
                     <Checkbox
                         label="Remember me"
                         value={remember}
                         onChange={() => setRemember(!remember)}
                     />
                     <button
-                        className="mt-0.5 text-xs font-bold transition-colors hover:text-purple-1"
+                        className="mt-0.5 text-xs font-bold transition-colors hover:text-purple-1 text-n-7 dark:text-white/80"
                         onClick={onRecover}
                     >
                         Recover password
@@ -58,10 +58,10 @@ const SignIn = ({ onRecover, onLoginQr }: SignInProps) => {
                 >
                     Sign in
                 </button>
-                <div className="flex justify-center items-center py-6">
-                    <span className="w-full max-w-[8.25rem] h-0.25 bg-n-1 dark:bg-white"></span>
+                <div className="flex justify-center items-center py-6 text-n-7 dark:text-white">
+                    <span className="w-full max-w-[8.25rem] h-0.25 bg-n-1 dark:bg-white/20"></span>
                     <span className="mx-4 text-sm font-medium">or</span>
-                    <span className="w-full max-w-[8.25rem] h-0.25 bg-n-1 dark:bg-white"></span>
+                    <span className="w-full max-w-[8.25rem] h-0.25 bg-n-1 dark:bg-white/20"></span>
                 </div>
                 <button
                     className="btn-stroke w-full h-14"

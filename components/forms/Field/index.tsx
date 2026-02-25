@@ -40,7 +40,7 @@ const Field = ({
     return (
         <div className={`${className}`}>
             <div className="">
-                {label && <div className="mb-3 text-xs font-bold">{label}</div>}
+                {label && <div className="mb-3 text-xs font-bold text-n-7 dark:text-white">{label}</div>}
                 <div className="relative">
                     {textarea ? (
                         <textarea

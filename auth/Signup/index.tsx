@@ -20,7 +20,7 @@ const countries = [
 
 type SignUpProps = {};
 
-const SignUp = ({}: SignUpProps) => {
+const SignUp = ({ }: SignUpProps) => {
     const [country, setCountry] = useState<any>(countries[0]);
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
@@ -30,8 +30,8 @@ const SignUp = ({}: SignUpProps) => {
     return (
         <>
             <form action="" onSubmit={() => console.log("Submit")}>
-                <div className="mb-1 text-h1">Sign up</div>
-                <div className="mb-12 text-sm text-secondary /50">
+                <div className="mb-1 text-h1 text-n-7 dark:text-white">Sign up</div>
+                <div className="mb-12 text-sm text-n-7 dark:text-white/70">
                     Before we start, please enter your current location
                 </div>
                 <Select
@@ -60,18 +60,20 @@ const SignUp = ({}: SignUpProps) => {
                     onChange={(e: any) => setPassword(e.target.value)}
                     required
                 />
-                <Checkbox
-                    className="mb-3.5"
-                    label="I agree to receive email updates"
-                    value={agreeEmail}
-                    onChange={() => setAgreeEmail(!agreeEmail)}
-                />
-                <Checkbox
-                    className="mb-6.5"
-                    label="I have read and agree to Terms of Service"
-                    value={conditions}
-                    onChange={() => setConditions(!conditions)}
-                />
+                <div className="mb-3.5 text-n-7 dark:text-white">
+                    <Checkbox
+                        label="I agree to receive email updates"
+                        value={agreeEmail}
+                        onChange={() => setAgreeEmail(!agreeEmail)}
+                    />
+                </div>
+                <div className="mb-6.5 text-n-7 dark:text-white">
+                    <Checkbox
+                        label="I have read and agree to Terms of Service"
+                        value={conditions}
+                        onChange={() => setConditions(!conditions)}
+                    />
+                </div>
                 <button
                     className="btn-purple btn-shadow w-full h-14"
                     type="submit"
