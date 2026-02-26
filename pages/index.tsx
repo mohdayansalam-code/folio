@@ -1,8 +1,16 @@
+import { useState, useEffect } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import Icon from "@/components/Icon";
+import { useTheme } from "@/hooks/useTheme";
 
 export default function Home() {
+    const { theme, toggleTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
     return (
         <div className="min-h-screen bg-background dark:bg-n-2 font-sans text-n-7 dark:text-white flex flex-col selection:bg-purple-1/30 transition-colors overflow-hidden">
             <Head>
@@ -16,6 +24,15 @@ export default function Home() {
                     <div className="text-h4 font-bold tracking-tight">Folio</div>
                 </div>
                 <div className="flex items-center gap-6">
+                    {mounted && (
+                        <button
+                            className="w-10 h-10 flex items-center justify-center rounded-full border border-n-1 dark:border-white/10 text-n-7 dark:text-white hover:bg-n-1/5 dark:hover:bg-white/5 transition-colors"
+                            onClick={toggleTheme}
+                            aria-label="Toggle Theme"
+                        >
+                            <Icon name={theme === "light" ? "moon" : "sun"} className="icon-20 dark:fill-white" />
+                        </button>
+                    )}
                     <Link href="/auth/signup" className="btn-purple btn-small">Join Beta Access</Link>
                 </div>
             </header>
