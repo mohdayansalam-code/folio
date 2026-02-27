@@ -69,7 +69,7 @@ const Month = ({ scheduledPosts, currentDate }: MonthProps) => {
                                     classTitle="md:hidden"
                                     item={{
                                         ...task,
-                                        title: task.title,
+                                        title: task.content ? (task.content.length > 20 ? task.content.substring(0, 20) + "..." : task.content) : "Draft",
                                         time: new Date(task.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                                         color: task.status === 'scheduled' ? '#3BBD5B' : '#9966FF' // Green for scheduled, Purple for drafted/other
                                     }}

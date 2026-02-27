@@ -20,11 +20,13 @@ const TaskCard = ({ item, index }: TaskCardProps) => {
                         className={`card flex flex-col mt-2 px-4 py-5 transition-all duration-200 ease-out cursor-grab active:cursor-grabbing hover:!border-purple-1 ${snapshot.isDragging ? "!shadow-primary-6 -translate-y-[2px]" : ""
                             }`}
                     >
-                        <div className="mb-2 font-bold">{item.title}</div>
+                        <div className="mb-2 font-bold line-clamp-2">
+                            {item.content ? (item.content.length > 40 ? item.content.substring(0, 40) + "..." : item.content) : "New Draft"}
+                        </div>
 
-                        {item.body && (
-                            <div className="text-xs text-secondary mb-4 line-clamp-2">
-                                {item.body}
+                        {item.content && (
+                            <div className="text-xs text-secondary mb-4 line-clamp-3">
+                                {item.content}
                             </div>
                         )}
 

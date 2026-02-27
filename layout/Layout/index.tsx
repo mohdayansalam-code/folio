@@ -23,31 +23,11 @@ const Layout = ({ background, back, title, children }: LayoutProps) => {
     useEffect(() => {
         setIsDemo(localStorage.getItem('folio_demo_mode') === 'true');
 
-        const checkAccess = async () => {
-            // Skip check on non-dashboard routes if needed, 
-            // but Layout is primarily used for the app pages.
+        const checkAccess = () => {
+            // Soft login rule: dashboard is accessible if email exists in localStorage
             const email = localStorage.getItem('folio_user_email');
 
             if (!email) {
-                router.push('/');
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/user/access', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email }),
-                });
-                const data = await response.json();
-
-                if (!data.access) {
-                    console.error("Access denied:", data.error);
-                    localStorage.removeItem('folio_user_email');
-                    router.push('/');
-                }
-            } catch (err) {
-                console.error("Access verification failed");
                 router.push('/');
             }
         };

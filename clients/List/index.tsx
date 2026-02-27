@@ -19,7 +19,6 @@ const CustomersV1Page = () => {
     const [type, setType] = useState<string>("all-customers");
     const [valueAll, setValueAll] = useState<boolean>(false);
     const [clients, setClients] = useState<any[]>([]);
-    const [plan, setPlan] = useState<string>("free");
     const [loading, setLoading] = useState(true);
     const { mounted } = useHydrated();
 
@@ -29,15 +28,13 @@ const CustomersV1Page = () => {
 
     useEffect(() => {
         const fetchState = async () => {
-            const { data: member } = await supabase.from('workspace_members').select('workspace_id').limit(1).single();
-            if (member) {
-                const { data: workspace } = await supabase.from('workspaces').select('plan').eq('id', member.workspace_id).single();
-                if (workspace) setPlan(workspace.plan);
-            }
+            const email = localStorage.getItem('folio_user_email');
+            if (!email) return;
 
             const { data, error } = await supabase
                 .from('clients')
                 .select('*')
+                .eq('user_email', email)
                 .order('created_at', { ascending: false });
 
             if (data) {
@@ -50,12 +47,12 @@ const CustomersV1Page = () => {
 
     const handleCreateClient = async () => {
         setLoading(true);
-        const { data: workspaceData } = await supabase.from('workspace_members').select('workspace_id').limit(1).single();
-        if (!workspaceData) return setLoading(false);
+        const email = localStorage.getItem('folio_user_email');
+        if (!email) return setLoading(false);
 
         const { data, error } = await supabase.from('clients').insert({
             name: "New Client",
-            workspace_id: workspaceData.workspace_id,
+            user_email: email,
             status: 'active'
         }).select('id').single();
 
@@ -65,46 +62,6 @@ const CustomersV1Page = () => {
         } else {
             console.error(error);
             addToast("Failed to create client.", "error");
-            setLoading(false);
-        }
-    };
-
-    const handleDemoWorkspace = async () => {
-        setLoading(true);
-        const { data: workspaceData } = await supabase.from('workspace_members').select('workspace_id').limit(1).single();
-        if (!workspaceData) return setLoading(false);
-
-        const { data: clientData, error } = await supabase.from('clients').insert({
-            name: "Stark Industries",
-            niche: "Defense & Robotics",
-            workspace_id: workspaceData.workspace_id,
-            status: 'active'
-        }).select('id').single();
-
-        if (clientData) {
-            await supabase.from('client_brain').insert({
-                client_id: clientData.id,
-                voice_tone: "Authoritative, Visionary",
-                signature_stories: "Building the Arc Reactor in a cave.",
-                offer_positioning: "We privatized world peace.",
-                proof_results: "I am Iron Man.",
-                ai_status: 'ready'
-            });
-
-            await supabase.from('posts').insert([
-                { client_id: clientData.id, title: "Why I stopped building weapons", status: "idea" },
-                { client_id: clientData.id, title: "The future of clean energy", status: "idea" },
-                { client_id: clientData.id, title: "Managing Avengers Initiative", body: "It's tough.", status: "draft" },
-                { client_id: clientData.id, title: "AI assistants vs JARVIS", body: "JARVIS is better.", status: "approved" },
-                { client_id: clientData.id, title: "Thoughts on time travel", body: "It works.", status: "scheduled", scheduled_at: new Date(Date.now() + 86400000 * 2).toISOString() }
-            ]);
-
-            localStorage.setItem('folio_demo_mode', 'true');
-            addToast("Demo Workspace Activated", "success");
-            window.location.reload();
-        } else {
-            console.error(error);
-            addToast("Failed to initialize demo mode.", "error");
             setLoading(false);
         }
     };
@@ -133,37 +90,11 @@ const CustomersV1Page = () => {
                     <Icon name="filters" />
                     <span>Sort: Recent</span>
                 </button>
-                {plan === 'free' && clients.length >= 1 ? (
-                    <a href="https://whop.com/folio" target="_blank" rel="noreferrer" className="btn-stroke btn-small text-pink-1 border-pink-1 hover:bg-pink-1 hover:text-white">
-                        <Icon name="lightning" />
-                        <span>Upgrade</span>
-                    </a>
-                ) : (
-                    <button className="btn-purple btn-small" onClick={handleCreateClient}>
-                        <Icon name="plus" />
-                        <span>Add Client</span>
-                    </button>
-                )}
+                <button className="btn-purple btn-small" onClick={handleCreateClient}>
+                    <Icon name="plus" />
+                    <span>Add Client</span>
+                </button>
             </div>
-
-            {!loading && plan === 'free' && clients.length >= 1 && (
-                <div className="card shadow-primary-4 mb-8 bg-pink-1/[0.05] border border-pink-1/20 p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                    <div className="flex items-start gap-4">
-                        <div className="flex-shrink-0 w-12 h-12 rounded-full bg-pink-1/20 flex items-center justify-center">
-                            <Icon className="icon-24 fill-pink-1" name="lightning" />
-                        </div>
-                        <div>
-                            <div className="text-h6 mb-1 text-n-7 ">Workspace Limit Reached</div>
-                            <div className="text-muted text-sm max-w-xl">
-                                You are currently on the Free Plan which is limited to 1 active client. Upgrade to unlock more clients and unlimited AI generations.
-                            </div>
-                        </div>
-                    </div>
-                    <a href="https://whop.com/folio" target="_blank" rel="noreferrer" className="btn-pink btn-shadow h-12 px-8 shrink-0">
-                        Upgrade to Pro
-                    </a>
-                </div>
-            )}
 
             {loading ? (
                 <div className="card text-center py-20 flex flex-col items-center justify-center">
@@ -180,14 +111,11 @@ const CustomersV1Page = () => {
                         <Icon name="plus" />
                         <span>Add Client</span>
                     </button>
-                    <button className="text-sm font-bold mt-6 text-muted hover:text-purple-1 dark:hover:text-purple-1 transition-colors" onClick={handleDemoWorkspace}>
-                        Explore with a demo workspace
-                    </button>
                 </div>
             ) : mounted && isTablet ? (
                 <div className="card">
                     {filteredClients.map((customer) => (
-                        <Item item={customer} key={customer.id} />
+                        <Item item={customer} key={customer.id} onUpdate={() => window.location.reload()} />
                     ))}
                 </div>
             ) : (
@@ -207,7 +135,7 @@ const CustomersV1Page = () => {
                     </thead>
                     <tbody>
                         {filteredClients.map((customer) => (
-                            <Row item={customer} key={customer.id} />
+                            <Row item={customer} key={customer.id} onUpdate={() => window.location.reload()} />
                         ))}
                     </tbody>
                 </table>

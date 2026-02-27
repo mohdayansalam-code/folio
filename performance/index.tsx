@@ -4,6 +4,7 @@ import Field from "@/components/Field";
 import Icon from "@/components/Icon";
 import { supabase } from "@/utils/supabase";
 import { useToast } from "@/components/Toast";
+import Select from "@/components/Select";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const Performance = () => {
@@ -17,51 +18,72 @@ const Performance = () => {
     const [chartData, setChartData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const [clients, setClients] = useState<any[]>([]);
+    const [selectedClient, setSelectedClient] = useState<any>(null);
+
+    const fetchMetrics = async () => {
+        const email = localStorage.getItem('folio_user_email');
+        if (!email) {
+            setLoading(false);
+            return;
+        }
+
+        try {
+            const { data, error } = await supabase
+                .from('performance')
+                .select('*')
+                .eq('user_email', email)
+                .order('date', { ascending: true });
+
+            if (error) throw error;
+
+            if (data) {
+                const totalImpressions = data.reduce((sum, item) => sum + (item.impressions || 0), 0);
+                const totalReplies = data.reduce((sum, item) => sum + (item.comments || 0), 0);
+                const totalCalls = data.reduce((sum, item) => sum + (item.meetings || 0), 0);
+
+                setStats([
+                    { title: "Total Impressions", value: totalImpressions.toLocaleString(), color: "purple" },
+                    { title: "Comments / DMs", value: totalReplies.toLocaleString(), color: "green" },
+                    { title: "Meetings Booked", value: totalCalls.toLocaleString(), color: "yellow" },
+                ]);
+
+                // Group by date for the chart
+                const groupedData = data.reduce((acc: any, curr: any) => {
+                    const date = new Date(curr.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    if (!acc[date]) {
+                        acc[date] = { name: date, impressions: 0 };
+                    }
+                    acc[date].impressions += curr.impressions || 0;
+                    return acc;
+                }, {});
+
+                setChartData(Object.values(groupedData));
+            }
+        } catch (error) {
+            console.error('Error fetching performance metrics:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchClients = async () => {
+        const email = localStorage.getItem('folio_user_email');
+        if (email) {
+            const { data } = await supabase.from('clients').select('id, name').eq('user_email', email);
+            if (data && data.length > 0) {
+                const mapped = data.map(c => ({ id: c.id, title: c.name }));
+                setClients(mapped);
+                setSelectedClient(mapped[0]);
+            }
+        }
+    };
+
     useEffect(() => {
         let mounted = true;
 
-        const fetchMetrics = async () => {
-            try {
-                const { data, error } = await supabase
-                    .from('performance_metrics')
-                    .select('*')
-                    .order('week_start_date', { ascending: true });
-
-                if (error) throw error;
-
-                if (mounted && data && data.length > 0) {
-                    const totalImpressions = data.reduce((sum, item) => sum + (item.impressions || 0), 0);
-                    const totalReplies = data.reduce((sum, item) => sum + (item.replies || 0), 0);
-                    const totalCalls = data.reduce((sum, item) => sum + (item.calls || 0), 0);
-
-                    setStats([
-                        { title: "Total Impressions", value: totalImpressions.toLocaleString(), color: "purple" },
-                        { title: "Comments / DMs", value: totalReplies.toLocaleString(), color: "green" },
-                        { title: "Meetings Booked", value: totalCalls.toLocaleString(), color: "yellow" },
-                    ]);
-
-                    // Group by week for the chart
-                    const groupedData = data.reduce((acc: any, curr: any) => {
-                        const date = new Date(curr.week_start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                        if (!acc[date]) {
-                            acc[date] = { name: date, impressions: 0 };
-                        }
-                        acc[date].impressions += curr.impressions;
-                        return acc;
-                    }, {});
-
-                    setChartData(Object.values(groupedData));
-                }
-            } catch (error) {
-                console.error('Error fetching performance metrics:', error);
-            } finally {
-                if (mounted) {
-                    setLoading(false);
-                }
-            }
-        };
-
         fetchMetrics();
+        fetchClients();
 
         return () => {
             mounted = false;
@@ -141,6 +163,19 @@ const Performance = () => {
                         <div className="text-h6">Manual Input</div>
                     </div>
                     <div className="p-6">
+                        {clients.length > 0 && selectedClient ? (
+                            <div className="mb-4">
+                                <div className="text-sm font-bold mb-2">Select Client</div>
+                                <Select
+                                    className="w-full"
+                                    items={clients}
+                                    value={selectedClient}
+                                    onChange={setSelectedClient}
+                                />
+                            </div>
+                        ) : (
+                            <div className="text-xs text-orange-500 mb-4 font-bold">Please add a client first.</div>
+                        )}
                         <Field
                             className="mb-4"
                             label="Post Impressions"
@@ -163,13 +198,30 @@ const Performance = () => {
                             onChange={(e: any) => setCalls(e.target.value)}
                         />
                         <button
-                            className="btn-purple w-full h-12 shadow-primary-4 transition-all duration-150 active:translate-y-[1px]"
-                            onClick={() => {
+                            className={`btn-purple w-full h-12 shadow-primary-4 transition-all duration-150 active:translate-y-[1px] ${!selectedClient ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            disabled={!selectedClient}
+                            onClick={async () => {
+                                const email = localStorage.getItem('folio_user_email');
+                                if (!email || !selectedClient) return;
+
                                 if (impressions || replies || calls) {
-                                    setImpressions("");
-                                    setReplies("");
-                                    setCalls("");
-                                    addToast("Performance metrics saved.", "success");
+                                    const { error } = await supabase.from('performance').insert({
+                                        user_email: email,
+                                        client_id: selectedClient.id,
+                                        impressions: parseInt(impressions) || 0,
+                                        comments: parseInt(replies) || 0,
+                                        meetings: parseInt(calls) || 0
+                                    });
+
+                                    if (!error) {
+                                        setImpressions("");
+                                        setReplies("");
+                                        setCalls("");
+                                        addToast("Performance metrics saved.", "success");
+                                        fetchMetrics();
+                                    } else {
+                                        addToast("Failed to save metrics.", "error");
+                                    }
                                 } else {
                                     addToast("Please enter metrics to save.", "error");
                                 }

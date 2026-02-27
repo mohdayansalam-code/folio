@@ -5,25 +5,51 @@ import Icon from "@/components/Icon";
 import TaskCard from "./TaskCard";
 import { supabase } from "@/utils/supabase";
 import { useToast } from "@/components/Toast";
+import Select from "@/components/Select";
 
 const initialColumns: Record<string, any> = {
-    idea: { title: "Ideas", color: "#9966FF", items: [] },
     draft: { title: "Drafting", color: "#FF9966", items: [] },
-    approved: { title: "Approved", color: "#66CCFF", items: [] },
     scheduled: { title: "Scheduled", color: "#3BBD5B", items: [] },
-    posted: { title: "Posted", color: "#319DFF", items: [] },
+    published: { title: "Published", color: "#319DFF", items: [] },
 };
 
 const KanbanDescPage = () => {
     const [columns, setColumns] = useState(initialColumns);
+    const [clients, setClients] = useState<any[]>([]);
+    const [selectedClient, setSelectedClient] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const { addToast } = useToast();
 
+    useEffect(() => {
+        const fetchClients = async () => {
+            const email = localStorage.getItem('folio_user_email');
+            if (email) {
+                const { data } = await supabase.from('clients').select('id, name').eq('user_email', email);
+                if (data && data.length > 0) {
+                    const mapped = data.map(c => ({ id: c.id, title: c.name }));
+                    setClients([{ id: 'all', title: 'All Clients' }, ...mapped]);
+                    setSelectedClient({ id: 'all', title: 'All Clients' });
+                }
+            }
+        };
+        fetchClients();
+    }, []);
+
     const fetchPipeline = async () => {
-        const { data, error } = await supabase
-            .from('posts')
+        const email = localStorage.getItem('folio_user_email');
+        if (!email) return;
+
+        let query = supabase
+            .from('drafts')
             .select('*')
+            .eq('user_email', email)
             .order('created_at', { ascending: false });
+
+        if (selectedClient && selectedClient.id !== 'all') {
+            query = query.eq('client_id', selectedClient.id);
+        }
+
+        const { data, error } = await query;
 
         if (data) {
             const newCols = JSON.parse(JSON.stringify(initialColumns));
@@ -38,8 +64,28 @@ const KanbanDescPage = () => {
     };
 
     useEffect(() => {
-        fetchPipeline();
-    }, []);
+        if (selectedClient || clients.length === 0) {
+            fetchPipeline();
+        }
+    }, [selectedClient]);
+
+    const handleCreateDraft = async () => {
+        const email = localStorage.getItem('folio_user_email');
+        if (!email) return;
+
+        const payload = {
+            user_email: email,
+            content: "New Draft Idea...",
+            status: "draft",
+            client_id: selectedClient && selectedClient.id !== 'all' ? selectedClient.id : null
+        };
+
+        const { error } = await supabase.from('drafts').insert(payload);
+        if (!error) {
+            fetchPipeline();
+            addToast("Draft created", "success");
+        }
+    };
 
     const isEmpty = Object.values(columns).reduce((acc, col: any) => acc + col.items.length, 0) === 0;
 
@@ -63,15 +109,23 @@ const KanbanDescPage = () => {
                 [destination.droppableId]: { ...destColumn, items: destItems },
             });
 
-            // Async database update executing silently
-            await supabase
-                .from('posts')
-                .update({ status: destination.droppableId })
-                .eq('id', draggableId);
+            let updatePayload: any = { status: destination.droppableId };
 
             if (destination.droppableId === 'scheduled') {
+                const isDate = window.prompt("Schedule Post (YYYY-MM-DD):", new Date(Date.now() + 86400000).toISOString().split('T')[0]);
+                if (isDate) {
+                    updatePayload.scheduled_at = new Date(isDate).toISOString();
+                } else {
+                    updatePayload.scheduled_at = new Date(Date.now() + 86400000).toISOString();
+                }
                 addToast("Post successfully scheduled.", "success");
             }
+
+            // Async database update executing silently
+            await supabase
+                .from('drafts')
+                .update(updatePayload)
+                .eq('id', draggableId);
 
         } else {
             // Simple Re-Ordering within lane
@@ -87,8 +141,25 @@ const KanbanDescPage = () => {
         }
     };
 
+
     return (
         <Layout title="Content Pipeline">
+            <div className="flex justify-between items-center mb-6">
+                <div className="text-h4">Content Pipeline</div>
+                {clients.length > 0 && selectedClient && (
+                    <Select
+                        className="w-48 ml-auto mr-4"
+                        items={clients}
+                        value={selectedClient}
+                        onChange={setSelectedClient}
+                    />
+                )}
+                <button className="btn-purple h-12 px-6" onClick={handleCreateDraft}>
+                    <Icon name="plus" />
+                    <span>Create Draft</span>
+                </button>
+            </div>
+
             <div className="2xl:-mx-8 lg:-mx-6 md:-mx-5">
                 {loading ? (
                     <div className="card text-center py-20 flex flex-col items-center justify-center max-w-2xl mx-auto my-12">
@@ -101,7 +172,7 @@ const KanbanDescPage = () => {
                         <div className="text-secondary mb-6 max-w-md mx-auto">
                             No content tasks scheduled. Start moving ideas to drafts, or generate a new weekly content pack for your clients.
                         </div>
-                        <button className="btn-purple btn-shadow h-12 px-6">
+                        <button className="btn-purple btn-shadow h-12 px-6" onClick={handleCreateDraft}>
                             <Icon name="plus" />
                             <span>Create Draft</span>
                         </button>
@@ -132,7 +203,7 @@ const KanbanDescPage = () => {
                                                 <TaskCard key={item.id} item={item} index={index} />
                                             ))}
                                             {provided.placeholder}
-                                            <button className="flex justify-center flex-row gap-2 items-center h-13 mt-3 border border-dashed border-n-1 text-xs font-bold transition-colors dark:border-white hover:!border-purple-1 hover:text-purple-1">
+                                            <button className="flex justify-center flex-row gap-2 items-center h-13 mt-3 border border-dashed border-n-1 text-xs font-bold transition-colors dark:border-white hover:!border-purple-1 hover:text-purple-1" onClick={handleCreateDraft}>
                                                 <Icon className="icon-16 dark:fill-white" name="plus-circle" />
                                                 Add a Draft
                                             </button>

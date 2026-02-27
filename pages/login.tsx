@@ -12,31 +12,26 @@ const Login = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        const trimmedEmail = email.trim().toLowerCase();
+
+        // Basic email validation
+        if (!trimmedEmail || !trimmedEmail.includes('@')) {
+            setError("Please enter a valid email address.");
+            return;
+        }
+
         setLoading(true);
         setError(null);
 
         try {
-            const response = await fetch('/api/user/access', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: email.trim().toLowerCase() }),
-            });
+            // Save to localStorage (simple session management as requested)
+            localStorage.setItem('folio_user_email', trimmedEmail);
 
-            const data = await response.json();
-
-            if (data.access) {
-                // Save to localStorage (simple session management for this demo)
-                localStorage.setItem('folio_user_email', data.email);
-                localStorage.setItem('folio_user_plan', data.plan);
-
-                // Redirect to dashboard
-                router.push('/dashboard');
-            } else {
-                setError(data.error || "No active membership found for this email.");
-            }
+            // Redirect to dashboard immediately
+            router.push('/dashboard');
         } catch (err) {
             setError("Something went wrong. Please try again.");
-        } finally {
             setLoading(false);
         }
     };
@@ -87,12 +82,7 @@ const Login = () => {
                         </button>
                     </form>
 
-                    <div className="mt-8 text-center text-sm font-medium text-secondary">
-                        Don't have a plan?{" "}
-                        <a href="https://whop.com" target="_blank" rel="noopener noreferrer" className="text-purple-1 hover:text-purple-1/80 transition-colors font-bold">
-                            Purchase on Whop
-                        </a>
-                    </div>
+
                 </div>
             </div>
 

@@ -41,8 +41,19 @@ const ClientBrain = () => {
         let mounted = true;
 
         const fetchClients = async () => {
+            const email = localStorage.getItem('folio_user_email');
+            if (!email) {
+                if (mounted) setStatus("idle");
+                return;
+            }
+
             try {
-                const { data, error } = await supabase.from('clients').select('id, name').order('created_at', { ascending: false });
+                const { data, error } = await supabase
+                    .from('clients')
+                    .select('id, name')
+                    .eq('user_email', email)
+                    .order('created_at', { ascending: false });
+
                 if (mounted && !error && data && data.length > 0) {
                     const mappedClients = data.map((c: any) => ({ id: c.id, title: c.name }));
 
@@ -130,11 +141,14 @@ const ClientBrain = () => {
     };
 
     const processBrain = async () => {
-        if (!client) return;
+        const email = localStorage.getItem('folio_user_email');
+        if (!client || !email) return;
+
         setStatus("processing");
 
         const { error } = await supabase.from('client_brain').upsert({
             client_id: client.id,
+            user_email: email,
             voice_tone: brainData.voice_tone,
             signature_stories: brainData.signature_stories,
             offer_positioning: brainData.offer_positioning,

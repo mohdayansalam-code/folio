@@ -1,14 +1,52 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Checkbox from "@/components/Checkbox";
 import Icon from "@/components/Icon";
+import { supabase } from "@/utils/supabase";
 
 type RowProps = {
     item: any;
+    onUpdate: () => void;
 };
 
-const Row = ({ item }: RowProps) => {
+const Row = ({ item, onUpdate }: RowProps) => {
     const [value, setValue] = useState<boolean>(false);
+    const [showMenu, setShowMenu] = useState<boolean>(false);
+    const menuRef = useRef<HTMLTableDataCellElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setShowMenu(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const handleEdit = async () => {
+        const newName = window.prompt("Enter new client name:", item.name);
+        if (newName && newName.trim() !== item.name) {
+            await supabase.from('clients').update({ name: newName.trim() }).eq('id', item.id);
+            onUpdate();
+        }
+        setShowMenu(false);
+    };
+
+    const handleToggleStatus = async () => {
+        const newStatus = item.status === 'active' ? 'paused' : 'active';
+        await supabase.from('clients').update({ status: newStatus }).eq('id', item.id);
+        onUpdate();
+        setShowMenu(false);
+    };
+
+    const handleDelete = async () => {
+        if (window.confirm(`Are you sure you want to delete ${item.name}? This cannot be undone.`)) {
+            await supabase.from('clients').delete().eq('id', item.id);
+            onUpdate();
+        }
+        setShowMenu(false);
+    };
 
     return (
         <tr className="">
@@ -51,10 +89,26 @@ const Row = ({ item }: RowProps) => {
                     {item.status}
                 </span>
             </td>
-            <td className="td-custom text-right">
-                <button className="btn-transparent-dark btn-small btn-square">
+            <td className="td-custom text-right relative" ref={menuRef}>
+                <button
+                    className="btn-transparent-dark btn-small btn-square"
+                    onClick={() => setShowMenu(!showMenu)}
+                >
                     <Icon name="dots" />
                 </button>
+                {showMenu && (
+                    <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-n-1 border border-n-1 dark:border-white/10 shadow-primary-4 rounded-xl z-10 py-2 overflow-hidden">
+                        <button className="w-full text-left px-4 py-2 hover:bg-n-2/5 dark:hover:bg-white/5 text-sm font-bold text-n-7 dark:text-white transition-colors" onClick={handleEdit}>
+                            Edit Name
+                        </button>
+                        <button className="w-full text-left px-4 py-2 hover:bg-n-2/5 dark:hover:bg-white/5 text-sm font-bold text-n-7 dark:text-white transition-colors" onClick={handleToggleStatus}>
+                            {item.status === 'active' ? 'Pause' : 'Resume'} Client
+                        </button>
+                        <button className="w-full text-left px-4 py-2 hover:bg-n-2/5 dark:hover:bg-white/5 text-sm font-bold text-red-1 transition-colors" onClick={handleDelete}>
+                            Delete
+                        </button>
+                    </div>
+                )}
             </td>
         </tr>
     );
