@@ -4,7 +4,10 @@ import Link from "next/link";
 import Icon from "@/components/Icon";
 import { useTheme } from "@/hooks/useTheme";
 
+import { useRouter } from "next/router";
+
 export default function Home() {
+    const router = useRouter();
     const { theme, toggleTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
 
@@ -26,6 +29,7 @@ export default function Home() {
                 <div className="flex items-center gap-6">
                     {mounted && (
                         <button
+                            type="button"
                             className="w-10 h-10 flex items-center justify-center rounded-full border border-n-1 dark:border-white/10 text-n-7 dark:text-white hover:bg-n-1/5 dark:hover:bg-white/5 transition-colors"
                             onClick={toggleTheme}
                             aria-label="Toggle Theme"
@@ -33,7 +37,7 @@ export default function Home() {
                             <Icon name={theme === "light" ? "moon" : "sun"} className="icon-20 dark:fill-white" />
                         </button>
                     )}
-                    <Link href="/auth/signup" className="btn-purple btn-small">Join Beta Access</Link>
+                    <button type="button" onClick={() => router.push('/dashboard')} className="btn-purple btn-small">Open Dashboard</button>
                 </div>
             </header>
 
@@ -50,9 +54,9 @@ export default function Home() {
                 </p>
 
                 <div className="flex flex-col justify-center items-center gap-3">
-                    <Link href="/auth/signup" className="btn-purple btn-shadow h-16 px-10 text-lg flex items-center justify-center hover:-translate-y-1">
-                        Join Beta Access
-                    </Link>
+                    <button type="button" onClick={() => router.push('/dashboard')} className="btn-purple btn-shadow h-16 px-10 text-lg flex items-center justify-center hover:-translate-y-1">
+                        Open Dashboard
+                    </button>
                     <span className="text-sm font-bold text-n-3 dark:text-secondary opacity-80">
                         Private beta · No credit card · Limited spots
                     </span>
@@ -179,7 +183,7 @@ export default function Home() {
                             <li className="flex gap-3"><Icon name="check" className="w-5 h-5 fill-purple-1 shrink-0" /> Full content pipeline</li>
                             <li className="flex gap-3"><Icon name="check" className="w-5 h-5 fill-purple-1 shrink-0" /> limited generation runs</li>
                         </ul>
-                        <Link href="/auth/signup" className="btn-stroke w-full h-14 bg-transparent border-n-1 dark:border-white">Join Beta Access</Link>
+                        <button type="button" onClick={() => router.push('/dashboard')} className="btn-stroke w-full h-14 bg-transparent border-n-1 dark:border-white">Open Dashboard</button>
                     </div>
 
                     {/* Tier 2 */}
@@ -195,7 +199,7 @@ export default function Home() {
                             <li className="flex gap-3"><Icon name="check" className="w-5 h-5 fill-white shrink-0" /> Unlimited generation runs</li>
                             <li className="flex gap-3"><Icon name="check" className="w-5 h-5 fill-white shrink-0" /> Priority support</li>
                         </ul>
-                        <Link href="/auth/signup" className="btn-dark w-full h-14 bg-n-1 hover:bg-n-1/90 shadow-primary-4 border-n-1">Join Beta Access</Link>
+                        <button type="button" onClick={() => router.push('/dashboard')} className="btn-dark w-full h-14 bg-n-1 hover:bg-n-1/90 shadow-primary-4 border-n-1">Open Dashboard</button>
                     </div>
 
                     {/* Tier 3 */}
@@ -208,7 +212,7 @@ export default function Home() {
                             <li className="flex gap-3"><Icon name="check" className="w-5 h-5 fill-purple-1 shrink-0" /> Custom branding</li>
                             <li className="flex gap-3"><Icon name="check" className="w-5 h-5 fill-purple-1 shrink-0" /> Dedicated success manager</li>
                         </ul>
-                        <Link href="/auth/signup" className="btn-stroke w-full h-14 bg-transparent border-n-1 dark:border-white">Join Beta Access</Link>
+                        <button type="button" onClick={() => router.push('/dashboard')} className="btn-stroke w-full h-14 bg-transparent border-n-1 dark:border-white">Open Dashboard</button>
                     </div>
                 </div>
 
@@ -223,9 +227,9 @@ export default function Home() {
                 <div className="relative z-10 max-w-4xl mx-auto">
                     <h2 className="text-[4rem] leading-[1.1] font-bold tracking-tight mb-8 md:text-5xl drop-shadow-md">Bring calm control to your ghostwriting agency.</h2>
                     <p className="text-xl text-white/80 max-w-2xl mx-auto mb-10 font-medium">Reclaim your time, standardize your workflows, and scale your operation with total professionalism.</p>
-                    <Link href="/auth/signup" className="btn-purple btn-shadow h-16 px-12 text-lg inline-flex items-center justify-center hover:-translate-y-1">
-                        Join Beta Access
-                    </Link>
+                    <button type="button" onClick={() => router.push('/dashboard')} className="btn-purple btn-shadow h-16 px-12 text-lg inline-flex items-center justify-center hover:-translate-y-1">
+                        Open Dashboard
+                    </button>
                 </div>
             </section>
 

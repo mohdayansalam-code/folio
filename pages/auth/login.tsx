@@ -2,6 +2,15 @@ import Head from "next/head";
 import Link from "next/link";
 import LoginPage from "../../auth/Login";
 
+export async function getServerSideProps() {
+    return {
+        redirect: {
+            destination: '/',
+            permanent: false,
+        },
+    }
+}
+
 export default function Login() {
     return (
         <div className="flex min-h-screen bg-n-1 dark:bg-n-2 font-sans selection:bg-purple-1/30">

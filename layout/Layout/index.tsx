@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Head from "next/head";
 import Image from "@/components/Image";
 import Sidebar from "@/components/Sidebar";
@@ -7,8 +7,6 @@ import Footer from "@/components/Footer";
 import Icon from "@/components/Icon";
 import Menu from "./Menu";
 import { useRouter } from "next/router";
-import { supabase } from "@/utils/supabase";
-import { useAuth } from "@/context/AuthProvider";
 
 type LayoutProps = {
     background?: boolean;
@@ -21,43 +19,10 @@ const Layout = ({ background, back, title, children }: LayoutProps) => {
     const [visible, setVisible] = useState<boolean>(false);
     const [isDemo, setIsDemo] = useState<boolean>(false);
     const router = useRouter();
-    const { session, loading } = useAuth();
-
-    const onboardedRef = useRef(false);
 
     useEffect(() => {
         setIsDemo(localStorage.getItem('folio_demo_mode') === 'true');
-
-        let mounted = true;
-
-        const enforceOnboarding = async () => {
-            if (!session) return; // Unauthenticated flow handled by App
-
-            // If we are already on the clients page, we don't need an infinite loop.
-            if (router.pathname === "/clients") return;
-
-            // Stop polling immediately if we've already securely verified they are onboarded
-            if (onboardedRef.current) return;
-
-            // Fetch any clients mapped to their workspace
-            const { data: clients, error } = await supabase.from('clients').select('id').limit(1);
-
-            if (mounted) {
-                if (!error && clients && clients.length > 0) {
-                    onboardedRef.current = true; // Lock the verification to prevent future route fetches
-                } else if (!error && (!clients || clients.length === 0)) {
-                    // User has no clients. Force the empty state onboarding screen!
-                    router.push('/clients?onboarding=true');
-                }
-            }
-        };
-
-        if (!loading) enforceOnboarding();
-
-        return () => {
-            mounted = false;
-        };
-    }, [router.pathname, session, loading]);
+    }, []);
 
     return (
         <>
