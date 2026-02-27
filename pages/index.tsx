@@ -37,7 +37,7 @@ export default function Home() {
                             <Icon name={theme === "light" ? "moon" : "sun"} className="icon-20 dark:fill-white" />
                         </button>
                     )}
-                    <button type="button" onClick={() => router.push('/dashboard')} className="btn-purple btn-small">Open Dashboard</button>
+                    <button type="button" onClick={() => router.push('/login')} className="btn-purple btn-small">Access App</button>
                 </div>
             </header>
 
@@ -54,8 +54,8 @@ export default function Home() {
                 </p>
 
                 <div className="flex flex-col justify-center items-center gap-3">
-                    <button type="button" onClick={() => router.push('/dashboard')} className="btn-purple btn-shadow h-16 px-10 text-lg flex items-center justify-center hover:-translate-y-1">
-                        Open Dashboard
+                    <button type="button" onClick={() => router.push('/login')} className="btn-purple btn-shadow h-16 px-10 text-lg flex items-center justify-center hover:-translate-y-1">
+                        Access App
                     </button>
                     <span className="text-sm font-bold text-n-3 dark:text-secondary opacity-80">
                         Private beta · No credit card · Limited spots
@@ -183,7 +183,7 @@ export default function Home() {
                             <li className="flex gap-3"><Icon name="check" className="w-5 h-5 fill-purple-1 shrink-0" /> Full content pipeline</li>
                             <li className="flex gap-3"><Icon name="check" className="w-5 h-5 fill-purple-1 shrink-0" /> limited generation runs</li>
                         </ul>
-                        <button type="button" onClick={() => router.push('/dashboard')} className="btn-stroke w-full h-14 bg-transparent border-n-1 dark:border-white">Open Dashboard</button>
+                        <button type="button" onClick={() => router.push('/login')} className="btn-stroke w-full h-14 bg-transparent border-n-1 dark:border-white">Access App</button>
                     </div>
 
                     {/* Tier 2 */}
@@ -199,7 +199,7 @@ export default function Home() {
                             <li className="flex gap-3"><Icon name="check" className="w-5 h-5 fill-white shrink-0" /> Unlimited generation runs</li>
                             <li className="flex gap-3"><Icon name="check" className="w-5 h-5 fill-white shrink-0" /> Priority support</li>
                         </ul>
-                        <button type="button" onClick={() => router.push('/dashboard')} className="btn-dark w-full h-14 bg-n-1 hover:bg-n-1/90 shadow-primary-4 border-n-1">Open Dashboard</button>
+                        <button type="button" onClick={() => router.push('/login')} className="btn-dark w-full h-14 bg-n-1 hover:bg-n-1/90 shadow-primary-4 border-n-1">Access App</button>
                     </div>
 
                     {/* Tier 3 */}
@@ -212,7 +212,7 @@ export default function Home() {
                             <li className="flex gap-3"><Icon name="check" className="w-5 h-5 fill-purple-1 shrink-0" /> Custom branding</li>
                             <li className="flex gap-3"><Icon name="check" className="w-5 h-5 fill-purple-1 shrink-0" /> Dedicated success manager</li>
                         </ul>
-                        <button type="button" onClick={() => router.push('/dashboard')} className="btn-stroke w-full h-14 bg-transparent border-n-1 dark:border-white">Open Dashboard</button>
+                        <button type="button" onClick={() => router.push('/login')} className="btn-stroke w-full h-14 bg-transparent border-n-1 dark:border-white">Access App</button>
                     </div>
                 </div>
 
@@ -227,8 +227,8 @@ export default function Home() {
                 <div className="relative z-10 max-w-4xl mx-auto">
                     <h2 className="text-[4rem] leading-[1.1] font-bold tracking-tight mb-8 md:text-5xl drop-shadow-md">Bring calm control to your ghostwriting agency.</h2>
                     <p className="text-xl text-white/80 max-w-2xl mx-auto mb-10 font-medium">Reclaim your time, standardize your workflows, and scale your operation with total professionalism.</p>
-                    <button type="button" onClick={() => router.push('/dashboard')} className="btn-purple btn-shadow h-16 px-12 text-lg inline-flex items-center justify-center hover:-translate-y-1">
-                        Open Dashboard
+                    <button type="button" onClick={() => router.push('/login')} className="btn-purple btn-shadow h-16 px-12 text-lg inline-flex items-center justify-center hover:-translate-y-1">
+                        Access App
                     </button>
                 </div>
             </section>
