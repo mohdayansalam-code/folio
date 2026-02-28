@@ -20,18 +20,8 @@ const Header = ({ back, title, visible }: HeaderProps) => {
     const router = useRouter();
 
     useEffect(() => {
-        const fetchPlan = async () => {
-            const { data: member } = await supabase.from('workspace_members').select('workspace_id').limit(1).single();
-            if (!member) return;
-
-            const { data: workspace } = await supabase.from('workspaces').select('plan').eq('id', member.workspace_id).single();
-            if (workspace) {
-                // In a production app, this usage calculation would sum `generated_ideas_count` across all content_packs.
-                // For this MVP, we hardcode the 0/3 display logic based on the 'free' plan evaluation.
-                setPlanData({ plan: workspace.plan, usages: 0 });
-            }
-        };
-        fetchPlan();
+        // Plan validation logic removed for pure email-only SaaS.
+        setPlanData({ plan: 'free', usages: 0 });
     }, []);
 
     useScrollPosition(({ currPos }) => {

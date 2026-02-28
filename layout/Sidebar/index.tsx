@@ -3,7 +3,6 @@ import Logo from "@/components/Logo";
 import Image from "@/components/Image";
 import Icon from "@/components/Icon";
 import Menu from "./Menu";
-import TeamMembers from "./TeamMembers";
 
 type SidebarProps = {
     visible: boolean;
@@ -37,7 +36,6 @@ const Sidebar = ({ visible, setVisible }: SidebarProps) => {
             </div>
 
             <div className="flex-1 overflow-y-auto scroll-smooth scrollbar-none -mx-8 px-8">
-                <TeamMembers visible={visible} />
             </div>
 
             <div

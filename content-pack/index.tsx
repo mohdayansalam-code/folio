@@ -15,12 +15,9 @@ const WeeklyContentPack = () => {
 
     useEffect(() => {
         const fetchPlanStatus = async () => {
-            const { data: member } = await supabase.from('workspace_members').select('workspace_id').limit(1).single();
-            if (member) {
-                const { data: workspace } = await supabase.from('workspaces').select('plan').eq('id', member.workspace_id).single();
-                if (workspace) setPlan(workspace.plan);
-            }
-            const { count } = await supabase.from('posts').select('*', { count: 'exact', head: true });
+            const email = localStorage.getItem('folio_user_email');
+            if (!email) return;
+            const { count } = await supabase.from('drafts').select('*', { count: 'exact', head: true }).eq('user_email', email);
             if (count !== null) setPostCount(count);
         };
         fetchPlanStatus();
