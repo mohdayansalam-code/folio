@@ -142,19 +142,55 @@ export default function Home() {
                             <div className="w-16 h-16 rounded-2xl bg-white dark:bg-n-1 border border-n-1 dark:border-white/10 shadow-primary-4 flex items-center justify-center mb-6 group-hover:bg-purple-1 group-hover:border-purple-1 transition-all">
                                 <Icon name={step.icon} className="icon-24 fill-n-3 dark:fill-white group-hover:fill-white" />
                             </div>
+                            <div className="text-xs font-black text-purple-1 tracking-[0.3em] uppercase mb-2">Step {step.step}</div>
+                            <h4 className="text-h5 mb-2 font-black">{step.title}</h4>
+                            <p className="text-sm text-secondary font-medium">{step.desc}</p>
                         </div>
+                    ))}
+                </div>
             </section>
 
-            {/* Footer */}
-            <footer className="py-8 px-8 md:px-5 bg-background dark:bg-n-2 text-n-3 dark:text-muted text-sm font-bold flex flex-col md:flex-row justify-between items-center z-10 relative">
-                <div className="mb-4 md:mb-0 flex items-center gap-2">
-                    <span>© 2026 Folio Inc.</span>
-                    <span className="px-1.5 py-0.5 rounded text-[10px] font-bold text-n-7 dark:text-n-1 bg-n-4 dark:bg-white/90 uppercase tracking-widest">Beta</span>
+            {/* Elite Trust Section */}
+            <section className="py-24 bg-purple-1/5 dark:bg-purple-1/5 border-y border-purple-1/20 dark:border-purple-1/10 text-center">
+                <div className="max-w-2xl mx-auto px-8">
+                    <h3 className="text-h4 mb-4">No payments. No lock-in. Own your data.</h3>
+                    <p className="text-lg text-n-3 dark:text-secondary font-medium opacity-80 leading-relaxed mb-10">
+                        Folio is currently in an invite-only private beta for active ghostwriting agency owners. We are not an "AI Wrapper"—we are building the future standard of ghostwriting operations.
+                    </p>
+                    <div className="inline-block px-6 py-3 rounded-full border border-n-1 dark:border-white/10 text-sm font-bold uppercase tracking-widest text-n-7 dark:text-white">
+                        Used daily by 15.0+ Agency Owners
+                    </div>
                 </div>
-                <div className="flex items-center gap-6">
-                    <Link href="/privacy" className="hover:text-purple-1 transition-colors">Privacy Policy</Link>
-                    <Link href="/terms" className="hover:text-purple-1 transition-colors">Terms of Service</Link>
-                    <a href="mailto:support@folio.com" className="hover:text-purple-1 transition-colors">Contact Support</a>
+            </section>
+
+            {/* Final CTA Section */}
+            <section className="py-48 px-8 relative overflow-hidden flex flex-col items-center text-center">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-1/20 rounded-full blur-[200px] opacity-40 pointer-events-none"></div>
+
+                <h2 className="text-[4rem] md:text-5xl font-black tracking-tighter mb-8 max-w-lg">
+                    Stop juggling spreadsheets. Start ghostwriting.
+                </h2>
+
+                <p className="text-xl text-n-3 dark:text-secondary mb-12 max-w-md font-medium">
+                    Limited private beta access remains. Join the cohort of founders scaling their agencies the elite way.
+                </p>
+
+                <button onClick={() => router.push('/login')} className="btn-purple btn-shadow h-20 px-16 text-xl font-black rounded-2xl hover:scale-105 transition-transform">
+                    Start Free →
+                </button>
+
+                <p className="mt-8 text-xs font-bold text-n-4 dark:text-white/40 uppercase tracking-widest">
+                    no credit card required · cancel anytime
+                </p>
+            </section>
+
+            {/* Elite Footer */}
+            <footer className="py-12 px-12 lg:px-8 border-t border-n-1 dark:border-white/5 bg-white dark:bg-n-2 flex items-center justify-between transition-colors">
+                <div className="text-sm font-bold opacity-60">© 2026 Folio Inc.</div>
+                <div className="flex gap-8">
+                    <a href="#" className="text-sm font-bold opacity-60 hover:opacity-100 transition-opacity">Privacy</a>
+                    <a href="#" className="text-sm font-bold opacity-60 hover:opacity-100 transition-opacity">Terms</a>
+                    <a href="#" className="text-sm font-bold opacity-60 hover:opacity-100 transition-opacity">Contact</a>
                 </div>
             </footer>
         </div>
