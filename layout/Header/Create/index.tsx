@@ -1,33 +1,36 @@
 import { Menu, Transition } from "@headlessui/react";
 import Icon from "@/components/Icon";
+import { useRouter } from "next/router";
 
 type CreateProps = {};
 
-const Create = ({}: CreateProps) => {
+const Create = ({ }: CreateProps) => {
+    const router = useRouter();
+
     const buttons = [
         {
             id: "0",
             title: "New Project",
             icon: "projects",
-            onClick: () => console.log("New Project"),
+            onClick: () => router.push('/clients?new=true'),
         },
         {
             id: "1",
             title: "New Task",
             icon: "task",
-            onClick: () => console.log("New Task"),
+            onClick: () => router.push('/content-pipeline?create=draft'),
         },
         {
             id: "2",
             title: "New Contact",
             icon: "add-member",
-            onClick: () => console.log("New Contact"),
+            onClick: () => router.push('/clients'),
         },
         {
             id: "3",
             title: "New Event",
             icon: "event",
-            onClick: () => console.log("New Event"),
+            onClick: () => router.push('/calendar?new=true'),
         },
     ];
 

@@ -9,9 +9,10 @@ import TablePagination from "@/components/TablePagination";
 import Row from "./Row";
 import Item from "./Item";
 import { useHydrated } from "@/hooks/useHydrated";
-import { supabase } from "@/utils/supabase";
 import { useRouter } from "next/router";
 import { useToast } from "@/components/Toast";
+import { getEntitlements } from "@/lib/entitlements";
+import { supabase } from "@/utils/supabase";
 
 const CustomersV1Page = () => {
     const router = useRouter();
@@ -26,26 +27,36 @@ const CustomersV1Page = () => {
         query: "(max-width: 1023px)",
     });
 
+    const fetchState = async () => {
+        const email = localStorage.getItem('folio_user_email');
+        if (!email) return;
+
+        const { data, error } = await supabase
+            .from('clients')
+            .select('*')
+            .eq('user_email', email)
+            .order('created_at', { ascending: false });
+
+        if (data) {
+            setClients(data);
+        }
+        setLoading(false);
+    };
+
     useEffect(() => {
-        const fetchState = async () => {
-            const email = localStorage.getItem('folio_user_email');
-            if (!email) return;
-
-            const { data, error } = await supabase
-                .from('clients')
-                .select('*')
-                .eq('user_email', email)
-                .order('created_at', { ascending: false });
-
-            if (data) {
-                setClients(data);
-            }
-            setLoading(false);
-        };
         fetchState();
     }, []);
 
+    const { canCreateClient, limits } = getEntitlements('free', {
+        currentClients: clients.length,
+        currentDraftsThisMonth: 0 // Draft count not needed on this page
+    });
+
     const handleCreateClient = async () => {
+        if (!canCreateClient) {
+            addToast(`Free plan allows ${limits.maxClients} client(s). Upgrade to Pro to add more.`, "error");
+            return;
+        }
         setLoading(true);
         const email = localStorage.getItem('folio_user_email');
         if (!email) return setLoading(false);
@@ -64,6 +75,14 @@ const CustomersV1Page = () => {
             addToast("Failed to create client.", "error");
             setLoading(false);
         }
+    };
+
+    const handleUpdateClient = (id: string, updates: any) => {
+        setClients(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
+    };
+
+    const handleDeleteClient = (id: string) => {
+        setClients(prev => prev.filter(c => c.id !== id));
     };
 
     const types = [
@@ -90,7 +109,10 @@ const CustomersV1Page = () => {
                     <Icon name="filters" />
                     <span>Sort: Recent</span>
                 </button>
-                <button className="btn-purple btn-small" onClick={handleCreateClient}>
+                <button
+                    className={`btn-purple btn-small ${!canCreateClient ? 'opacity-50' : ''}`}
+                    onClick={handleCreateClient}
+                >
                     <Icon name="plus" />
                     <span>Add Client</span>
                 </button>
@@ -107,7 +129,10 @@ const CustomersV1Page = () => {
                     <div className="text-secondary mb-6 max-w-md mx-auto">
                         Add your first client to start generating content, tracking performance, and managing your ghostwriting pipeline.
                     </div>
-                    <button className="btn-purple btn-shadow h-12 px-6" onClick={handleCreateClient}>
+                    <button
+                        className={`btn-purple btn-shadow h-12 px-6 ${!canCreateClient ? 'opacity-50' : ''}`}
+                        onClick={handleCreateClient}
+                    >
                         <Icon name="plus" />
                         <span>Add Client</span>
                     </button>
@@ -115,7 +140,12 @@ const CustomersV1Page = () => {
             ) : mounted && isTablet ? (
                 <div className="card">
                     {filteredClients.map((customer) => (
-                        <Item item={customer} key={customer.id} onUpdate={() => window.location.reload()} />
+                        <Item
+                            item={customer}
+                            key={customer.id}
+                            onUpdateClient={handleUpdateClient}
+                            onDeleteClient={handleDeleteClient}
+                        />
                     ))}
                 </div>
             ) : (
@@ -135,7 +165,12 @@ const CustomersV1Page = () => {
                     </thead>
                     <tbody>
                         {filteredClients.map((customer) => (
-                            <Row item={customer} key={customer.id} onUpdate={() => window.location.reload()} />
+                            <Row
+                                item={customer}
+                                key={customer.id}
+                                onUpdateClient={handleUpdateClient}
+                                onDeleteClient={handleDeleteClient}
+                            />
                         ))}
                     </tbody>
                 </table>

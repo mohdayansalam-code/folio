@@ -25,6 +25,11 @@ export const navigation = [
         url: "/content-pipeline",
     },
     {
+        title: "Analytics",
+        icon: "chart-1",
+        url: "/analytics",
+    },
+    {
         title: "Calendar",
         icon: "calendar",
         url: "/calendar",

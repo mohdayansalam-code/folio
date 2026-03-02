@@ -5,10 +5,11 @@ import { supabase } from "@/utils/supabase";
 
 type ItemProps = {
     item: any;
-    onUpdate: () => void;
+    onUpdateClient: (id: string, updates: any) => void;
+    onDeleteClient: (id: string) => void;
 };
 
-const Item = ({ item, onUpdate }: ItemProps) => {
+const Item = ({ item, onUpdateClient, onDeleteClient }: ItemProps) => {
     const [showMenu, setShowMenu] = useState<boolean>(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -23,25 +24,35 @@ const Item = ({ item, onUpdate }: ItemProps) => {
     }, []);
 
     const handleEdit = async () => {
+        const email = localStorage.getItem('folio_user_email');
+        if (!email) return;
+
         const newName = window.prompt("Enter new client name:", item.name);
         if (newName && newName.trim() !== item.name) {
-            await supabase.from('clients').update({ name: newName.trim() }).eq('id', item.id);
-            onUpdate();
+            const trimmedName = newName.trim();
+            await supabase.from('clients').update({ name: trimmedName }).eq('id', item.id).eq('user_email', email);
+            onUpdateClient(item.id, { name: trimmedName });
         }
         setShowMenu(false);
     };
 
     const handleToggleStatus = async () => {
+        const email = localStorage.getItem('folio_user_email');
+        if (!email) return;
+
         const newStatus = item.status === 'active' ? 'paused' : 'active';
-        await supabase.from('clients').update({ status: newStatus }).eq('id', item.id);
-        onUpdate();
+        await supabase.from('clients').update({ status: newStatus }).eq('id', item.id).eq('user_email', email);
+        onUpdateClient(item.id, { status: newStatus });
         setShowMenu(false);
     };
 
     const handleDelete = async () => {
+        const email = localStorage.getItem('folio_user_email');
+        if (!email) return;
+
         if (window.confirm(`Are you sure you want to delete ${item.name}? This cannot be undone.`)) {
-            await supabase.from('clients').delete().eq('id', item.id);
-            onUpdate();
+            await supabase.from('clients').delete().eq('id', item.id).eq('user_email', email);
+            onDeleteClient(item.id);
         }
         setShowMenu(false);
     };

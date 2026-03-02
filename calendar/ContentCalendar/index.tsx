@@ -20,13 +20,9 @@ const CalendarPage = () => {
     ];
 
     const fetchCalendarData = async () => {
-        const email = localStorage.getItem('folio_user_email');
-        if (!email) return;
-
         const { data, error } = await supabase
             .from('drafts')
             .select('*')
-            .eq('user_email', email)
             .not('scheduled_at', 'is', null)
             .order('scheduled_at', { ascending: true });
 
@@ -73,13 +69,13 @@ const CalendarPage = () => {
             ) : isEmpty ? (
                 <div className="card shadow-primary-4 p-12 text-center max-w-2xl mx-auto flex flex-col items-center justify-center my-12">
                     <Icon className="icon-28 mb-4 text-muted dark:fill-white/50" name="calendar" />
-                    <div className="text-h4 mb-2">No posts scheduled</div>
+                    <div className="text-h4 mb-2">No scheduled posts yet</div>
                     <div className="text-secondary mb-6 max-w-md mx-auto">
                         Your calendar is clear. Create tasks in the content pipeline and schedule them to see them here.
                     </div>
                     <Link href="/content-pipeline" className="btn-purple btn-shadow h-12 px-6">
                         <Icon name="kanban" />
-                        <span>Go to Content Pipeline</span>
+                        <span>Schedule a post from Content Pipeline</span>
                     </Link>
                 </div>
             ) : (

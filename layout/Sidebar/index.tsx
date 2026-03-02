@@ -3,6 +3,7 @@ import Logo from "@/components/Logo";
 import Image from "@/components/Image";
 import Icon from "@/components/Icon";
 import Menu from "./Menu";
+import { useToast } from "@/components/Toast";
 
 type SidebarProps = {
     visible: boolean;
@@ -10,6 +11,7 @@ type SidebarProps = {
 };
 
 const Sidebar = ({ visible, setVisible }: SidebarProps) => {
+    const { addToast } = useToast();
 
     return (
         <div
@@ -35,11 +37,26 @@ const Sidebar = ({ visible, setVisible }: SidebarProps) => {
                 <Menu visible={visible} />
             </div>
 
-            <div className="flex-1 overflow-y-auto scroll-smooth scrollbar-none -mx-8 px-8">
+            <div className="flex-1 overflow-y-auto scroll-smooth scrollbar-none -mx-8 px-8 flex flex-col justify-end pb-6">
+                <div className={`mt-auto bg-purple-1/10 rounded-xl p-4 border border-purple-1/20 transition-opacity ${visible ? "opacity-100" : "xl:opacity-0 pointer-events-none"}`}>
+                    <div className="flex items-center justify-between mb-2">
+                        <div className="text-xs font-bold text-n-4 uppercase tracking-wider">Current Plan</div>
+                        <div className="bg-purple-1 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">Free</div>
+                    </div>
+                    <div className="text-sm font-medium text-white mb-3">
+                        Unlock Analytics & more clients.
+                    </div>
+                    <button
+                        onClick={() => addToast("Billing coming soon", "success")}
+                        className="btn-purple w-full h-8 text-xs sm:px-2"
+                    >
+                        Upgrade to Pro
+                    </button>
+                </div>
             </div>
 
             <div
-                className={`flex-none sticky bottom-0 bg-n-1 flex items-center h-18 mt-auto mx-0 pt-10 ${visible ? "mx-0" : "xl:-mx-4"
+                className={`flex-none bg-n-1 flex items-center h-18 mt-auto mx-0 pt-4 ${visible ? "mx-0" : "xl:-mx-4"
                     }`}
             >
                 <Link
