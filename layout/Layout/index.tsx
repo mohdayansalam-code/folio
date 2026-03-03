@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import Icon from "@/components/Icon";
 import Menu from "./Menu";
 import { useRouter } from "next/router";
+import { supabase } from "@/utils/supabase";
 
 type LayoutProps = {
     background?: boolean;
@@ -23,11 +24,10 @@ const Layout = ({ background, back, title, children }: LayoutProps) => {
     useEffect(() => {
         setIsDemo(localStorage.getItem('folio_demo_mode') === 'true');
 
-        const checkAccess = () => {
-            // Soft login rule: dashboard is accessible if email exists in localStorage
-            const email = localStorage.getItem('folio_user_email');
+        const checkAccess = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
 
-            if (!email) {
+            if (!session) {
                 router.push('/');
             }
         };

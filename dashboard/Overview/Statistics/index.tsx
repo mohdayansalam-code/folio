@@ -20,8 +20,8 @@ const Statistics = ({ }: StatisticsProps) => {
         let mounted = true;
 
         const fetchDashboardKPIs = async () => {
-            const email = localStorage.getItem('folio_user_email');
-            if (!email) {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
                 setLoading(false);
                 return;
             }
@@ -30,8 +30,7 @@ const Statistics = ({ }: StatisticsProps) => {
                 // 1. Clients (Active and Total)
                 const { data: clients, error: clientsError } = await supabase
                     .from('clients')
-                    .select('id, status')
-                    .eq('user_email', email);
+                    .select('id, status');
 
                 if (clientsError) throw clientsError;
 
@@ -41,8 +40,7 @@ const Statistics = ({ }: StatisticsProps) => {
                 // 2. Drafts (Pending and Scheduled)
                 const { data: drafts, error: draftsError } = await supabase
                     .from('drafts')
-                    .select('id, status, scheduled_at')
-                    .eq('user_email', email);
+                    .select('id, status, scheduled_at');
 
                 if (draftsError) throw draftsError;
 
@@ -61,8 +59,7 @@ const Statistics = ({ }: StatisticsProps) => {
                 // 4. Lifetime Impressions
                 const { data: metricsData, error: metricsError } = await supabase
                     .from('performance')
-                    .select('impressions')
-                    .eq('user_email', email);
+                    .select('impressions');
 
                 if (metricsError) throw metricsError;
 

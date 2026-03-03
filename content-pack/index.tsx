@@ -24,13 +24,13 @@ const WeeklyContentPack = () => {
     useEffect(() => {
         let mounted = true;
         const initData = async () => {
-            const email = localStorage.getItem('folio_user_email');
-            if (!email) return;
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
 
-            const { count } = await supabase.from('drafts').select('*', { count: 'exact', head: true }).eq('user_email', email);
+            const { count } = await supabase.from('drafts').select('*', { count: 'exact', head: true });
             if (count !== null && mounted) setPostCount(count);
 
-            const { data: clientsData } = await supabase.from('clients').select('*').eq('user_email', email).order('created_at', { ascending: false });
+            const { data: clientsData } = await supabase.from('clients').select('*').order('created_at', { ascending: false });
 
             if (mounted && clientsData && clientsData.length > 0) {
                 const mappedClients = clientsData.map(c => ({ value: c.id, label: c.name || "Unnamed Client" }));
@@ -53,13 +53,11 @@ const WeeklyContentPack = () => {
 
     const fetchItems = async () => {
         if (!selectedClientId) return;
-        const email = localStorage.getItem('folio_user_email');
         const weekStart = getWeekStartDate();
 
         const { data } = await supabase
             .from('content_pack_items')
             .select('*')
-            .eq('user_email', email)
             .eq('client_id', selectedClientId)
             .eq('week_start_date', weekStart)
             .order('created_at', { ascending: true });
@@ -89,11 +87,14 @@ const WeeklyContentPack = () => {
     }
 
     const handleAction = async (item: any, actionType: string) => {
-        const email = localStorage.getItem('folio_user_email');
-        if (!email || !selectedClientId) {
-            if (!selectedClientId) addToast("Select a client first", "error");
+        if (!selectedClientId) {
+            addToast("Select a client first", "error");
             return;
         }
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
         const weekStart = getWeekStartDate();
 
         if (actionType === 'draft') {
@@ -101,7 +102,7 @@ const WeeklyContentPack = () => {
             addToast("Drafting started in pipeline.", "success");
 
             await supabase.from('content_pack_items').update({ type: 'draft' }).eq('id', item.id).eq('week_start_date', weekStart);
-            await supabase.from('drafts').insert({ user_email: email, client_id: selectedClientId, content: item.description, status: 'draft', week_start_date: weekStart });
+            await supabase.from('drafts').insert({ user_id: user.id, client_id: selectedClientId, content: item.description, status: 'draft', week_start_date: weekStart });
 
         } else if (actionType === 'dismiss') {
             setPackItems(prev => prev.map(p => p.id === item.id ? { ...p, status: 'rejected' } : p));
@@ -131,8 +132,8 @@ const WeeklyContentPack = () => {
         if (!isBrainReady) return;
         setIsGenerating(true);
 
-        const email = localStorage.getItem('folio_user_email');
-        if (!email) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
             setIsGenerating(false);
             return;
         }
@@ -146,7 +147,7 @@ const WeeklyContentPack = () => {
         ];
 
         const payload = sampleIdeas.map(i => ({
-            user_email: email,
+            user_id: user.id,
             client_id: selectedClientId,
             week_start_date: weekStart,
             type: "idea",

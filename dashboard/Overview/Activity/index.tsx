@@ -10,8 +10,8 @@ const Activity = () => {
         let mounted = true;
 
         const fetchActivities = async () => {
-            const email = localStorage.getItem('folio_user_email');
-            if (!email) {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
                 setLoading(false);
                 return;
             }
@@ -22,19 +22,16 @@ const Activity = () => {
                     supabase
                         .from('clients')
                         .select('name, created_at')
-                        .eq('user_email', email)
                         .order('created_at', { ascending: false })
                         .limit(5),
                     supabase
                         .from('drafts')
                         .select('content, status, created_at')
-                        .eq('user_email', email)
                         .order('created_at', { ascending: false })
                         .limit(5),
                     supabase
                         .from('performance')
                         .select('impressions, created_at')
-                        .eq('user_email', email)
                         .order('created_at', { ascending: false })
                         .limit(5),
                 ]);

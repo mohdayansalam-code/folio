@@ -1,0 +1,13 @@
+{
+  "users": {
+    "data": []
+  },
+  "workspaces": {
+    "data": null,
+    "error": "Could not find the table 'public.workspaces' in the schema cache"
+  },
+  "profiles": {
+    "data": null,
+    "error": "Could not find the table 'public.profiles' in the schema cache"
+  }
+}

@@ -7,10 +7,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { draft_id, user_email } = req.body;
+    const { draft_id, user_id } = req.body;
 
-    if (!draft_id || !user_email) {
-        return res.status(400).json({ error: 'Missing draft_id or user_email' });
+    if (!draft_id || !user_id) {
+        return res.status(400).json({ error: 'Missing draft_id or user_id' });
     }
 
     // Validate ownership
@@ -18,7 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .from('drafts')
         .select('id')
         .eq('id', draft_id)
-        .eq('user_email', user_email)
+        .eq('user_id', user_id)
         .single();
 
     if (fetchError || !draft) {

@@ -11,6 +11,7 @@ export default function AnalyticsDashboard() {
     const { addToast } = useToast();
     const [drafts, setDrafts] = useState<any[]>([]);
     const [clients, setClients] = useState<any[]>([]);
+    const [performance, setPerformance] = useState<any[]>([]);
     const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -42,6 +43,17 @@ export default function AnalyticsDashboard() {
                 console.error("Fetch clients error:", clientsError);
             } else {
                 setClients(clientsData || []);
+
+                if (clientsData && clientsData.length > 0) {
+                    const clientIds = clientsData.map((c: any) => c.id);
+                    const { data: perfData } = await supabase
+                        .from("performance")
+                        .select("draft_id, impressions, comments, meetings")
+                        .in("client_id", clientIds)
+                        .not("draft_id", "is", null);
+
+                    setPerformance(perfData || []);
+                }
             }
 
             setLoading(false);
@@ -105,6 +117,31 @@ export default function AnalyticsDashboard() {
             };
         }).sort((a, b) => b.totalDrafts - a.totalDrafts);
     }, [drafts, clients]);
+
+    const topPosts = useMemo(() => {
+        let activeDrafts = drafts.filter(d => d.status === 'published');
+        if (selectedClientId && selectedClientId !== "all") {
+            activeDrafts = activeDrafts.filter((d) => d.client_id === selectedClientId);
+        }
+
+        const postsWithPerf = activeDrafts.map(draft => {
+            const relatedPerf = performance.filter(p => p.draft_id === draft.id);
+            const totalImpressions = relatedPerf.reduce((sum, p) => sum + (parseInt(p.impressions) || 0), 0);
+            const totalComments = relatedPerf.reduce((sum, p) => sum + (parseInt(p.comments) || 0), 0);
+            const totalMeetings = relatedPerf.reduce((sum, p) => sum + (parseInt(p.meetings) || 0), 0);
+            const conversionRate = totalImpressions > 0 ? ((totalMeetings / totalImpressions) * 100).toFixed(2) : "0.00";
+
+            return {
+                ...draft,
+                totalImpressions,
+                totalComments,
+                totalMeetings,
+                conversionRate
+            };
+        });
+
+        return postsWithPerf.sort((a, b) => b.totalMeetings - a.totalMeetings).slice(0, 5);
+    }, [drafts, performance, selectedClientId]);
 
     if (loading) {
         return (
@@ -266,6 +303,48 @@ export default function AnalyticsDashboard() {
                                     </tr>
                                 );
                             })}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* Top Performing Posts */}
+            <div className="card border border-n-1 dark:border-white/10 shadow-primary-4 rounded-xl overflow-hidden mt-8 mb-8">
+                <div className="flex flex-col md:flex-row md:items-center justify-between p-6 border-b border-n-1 dark:border-white/10">
+                    <div>
+                        <div className="text-h6 mb-1">Top Performing Posts</div>
+                        <div className="text-sm text-secondary">Drafts driving the highest ROI</div>
+                    </div>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead>
+                            <tr className="bg-n-2 dark:bg-n-1 text-xs text-muted uppercase tracking-widest font-bold">
+                                <th className="px-6 py-4">Post Title</th>
+                                <th className="px-6 py-4 text-center">Impressions</th>
+                                <th className="px-6 py-4 text-center">Comments</th>
+                                <th className="px-6 py-4 text-center">Meetings</th>
+                                <th className="px-6 py-4 text-center">Conv. Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {topPosts.length === 0 ? (
+                                <tr>
+                                    <td colSpan={5} className="px-6 py-8 text-center text-secondary">
+                                        No performance data linked to published posts yet.
+                                    </td>
+                                </tr>
+                            ) : topPosts.map((post) => (
+                                <tr key={post.id} className="border-b border-n-1 dark:border-white/10 last:border-0 hover:bg-n-2 dark:hover:bg-white/5 transition-colors">
+                                    <td className="px-6 py-5 font-bold line-clamp-1 max-w-[300px]">{post.title || "Untitled Draft"}</td>
+                                    <td className="px-6 py-5 text-center font-bold text-n-7 dark:text-white">{post.totalImpressions}</td>
+                                    <td className="px-6 py-5 text-center font-bold text-green-1">{post.totalComments}</td>
+                                    <td className="px-6 py-5 text-center font-bold text-orange-1">{post.totalMeetings}</td>
+                                    <td className="px-6 py-5 text-center text-sm">
+                                        <span className="bg-purple-1/20 text-purple-1 px-2 py-1 rounded font-bold">{post.conversionRate}%</span>
+                                    </td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                 </div>

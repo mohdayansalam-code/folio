@@ -17,8 +17,8 @@ const Focus = () => {
         let mounted = true;
 
         const determineFocus = async () => {
-            const email = localStorage.getItem('folio_user_email');
-            if (!email) {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
                 setLoading(false);
                 return;
             }
@@ -28,7 +28,6 @@ const Focus = () => {
                 const { data: clients } = await supabase
                     .from('clients')
                     .select('id')
-                    .eq('user_email', email)
                     .limit(1);
 
                 if (!clients || clients.length === 0) {
@@ -46,8 +45,7 @@ const Focus = () => {
                 // 2. Check Drafts
                 const { data: drafts } = await supabase
                     .from('drafts')
-                    .select('id, status, scheduled_at')
-                    .eq('user_email', email);
+                    .select('id, status, scheduled_at');
 
                 if (!drafts || drafts.length === 0) {
                     setFocus({

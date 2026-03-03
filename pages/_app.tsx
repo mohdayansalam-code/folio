@@ -5,6 +5,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import PageLoader from "@/components/PageLoader";
 import { ToastProvider } from "@/components/Toast";
 import { AuthProvider } from "@/context/AuthProvider";
+import { Toaster } from "react-hot-toast";
 import "@/styles/app.css";
 
 const inter = Inter({
@@ -23,6 +24,7 @@ export default function App({ Component, pageProps }: AppProps) {
                 <ToastProvider>
                     <main className={`${inter.variable} font-sans`}>
                         <PageLoader />
+                        <Toaster position="top-right" />
                         <Component {...pageProps} />
                     </main>
                 </ToastProvider>

@@ -60,6 +60,7 @@ const SignUp = ({ }: SignUpProps) => {
         if (data?.user) {
             router.push("/dashboard");
         } else {
+            setError("Unexpected error making account.");
             setIsLoading(false);
         }
     };

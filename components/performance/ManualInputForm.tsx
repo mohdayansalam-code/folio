@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Field from "@/components/Field";
+import Select from "@/components/Select";
 import Icon from "@/components/Icon";
 import { supabase } from "@/utils/supabase";
 import { useToast } from "@/components/Toast";
@@ -16,6 +17,37 @@ export default function ManualInputForm({ selectedClientId, canLogPerformance, o
     const [comments, setComments] = useState("");
     const [meetings, setMeetings] = useState("");
     const [saving, setSaving] = useState(false);
+
+    // Draft Attachment States
+    const [publishedDrafts, setPublishedDrafts] = useState<any[]>([]);
+    const [selectedDraft, setSelectedDraft] = useState<any | null>(null);
+
+    useEffect(() => {
+        async function fetchDrafts() {
+            if (!selectedClientId) {
+                setPublishedDrafts([]);
+                setSelectedDraft(null);
+                return;
+            }
+            const { data, error } = await supabase
+                .from('drafts')
+                .select('id, title')
+                .eq('client_id', selectedClientId)
+                .eq('status', 'published');
+
+            if (!error && data) {
+                setPublishedDrafts(data);
+            }
+            setSelectedDraft(null);
+        }
+        fetchDrafts();
+    }, [selectedClientId]);
+
+    const draftOptions = [
+        { id: "", title: "Do not attach to post" },
+        ...publishedDrafts.map(d => ({ id: d.id, title: d.title || "Untitled Draft" }))
+    ];
+    const currentSelectedDraft = selectedDraft || draftOptions[0];
 
     const handleSave = async () => {
         if (selectedClientId === null) {
@@ -49,6 +81,7 @@ export default function ManualInputForm({ selectedClientId, canLogPerformance, o
                 .from('performance')
                 .insert({
                     client_id: selectedClientId,
+                    draft_id: selectedDraft && selectedDraft.id !== "" ? selectedDraft.id : null,
                     impressions: imp,
                     comments: com,
                     meetings: mee
@@ -60,6 +93,7 @@ export default function ManualInputForm({ selectedClientId, canLogPerformance, o
             setImpressions("");
             setComments("");
             setMeetings("");
+            setSelectedDraft(null);
             onSaveSuccess();
         } catch (err: unknown) {
             const errorMessage = err instanceof Error ? err.message : "Save failed";
@@ -81,6 +115,13 @@ export default function ManualInputForm({ selectedClientId, canLogPerformance, o
                     </div>
                 ) : (
                     <div className="space-y-4">
+                        <Select
+                            className="mb-4 z-20"
+                            label="Attach to Post (optional)"
+                            items={draftOptions}
+                            value={currentSelectedDraft}
+                            onChange={(item: any) => setSelectedDraft(item)}
+                        />
                         <Field
                             label="Impressions"
                             placeholder="0"

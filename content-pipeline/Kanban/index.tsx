@@ -38,9 +38,10 @@ const KanbanDescPage = () => {
 
     useEffect(() => {
         const fetchClients = async () => {
-            const email = localStorage.getItem('folio_user_email');
-            if (email) {
-                const { data } = await supabase.from('clients').select('id, name').eq('user_email', email);
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                // RLS handles mapping the user's clients
+                const { data } = await supabase.from('clients').select('id, name');
                 if (data && data.length > 0) {
                     const mapped = data.map(c => ({ value: c.id, label: c.name }));
                     setClients([{ value: 'all', label: 'All Clients' }, ...mapped]);
@@ -77,10 +78,19 @@ const KanbanDescPage = () => {
         }
 
         setIsCreating(true);
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            addToast("Authentication error", "error");
+            setIsCreating(false);
+            return;
+        }
+
         const payload = {
             client_id: selectedClientId,
             title: title,
-            status: "draft"
+            status: "draft",
+            user_id: user.id
         };
 
         // Optimistic

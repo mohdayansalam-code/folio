@@ -18,6 +18,8 @@ interface PerformanceData {
     comments: number;
     meetings: number;
     created_at: string;
+    draft_id?: string;
+    drafts?: { title: string } | null;
 }
 
 interface ClientOption {
@@ -73,7 +75,7 @@ export default function PerformancePage() {
 
             const query = supabase
                 .from('performance')
-                .select('*')
+                .select('*, drafts(title)')
                 .eq('client_id', selectedClientId)
                 .order('created_at', { ascending: false });
 

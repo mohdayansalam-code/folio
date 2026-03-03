@@ -26,34 +26,34 @@ const Row = ({ item, onUpdateClient, onDeleteClient }: RowProps) => {
     }, []);
 
     const handleEdit = async () => {
-        const email = localStorage.getItem('folio_user_email');
-        if (!email) return;
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
 
         const newName = window.prompt("Enter new client name:", item.name);
         if (newName && newName.trim() !== item.name) {
             const trimmedName = newName.trim();
-            await supabase.from('clients').update({ name: trimmedName }).eq('id', item.id).eq('user_email', email);
+            await supabase.from('clients').update({ name: trimmedName }).eq('id', item.id);
             onUpdateClient(item.id, { name: trimmedName });
         }
         setShowMenu(false);
     };
 
     const handleToggleStatus = async () => {
-        const email = localStorage.getItem('folio_user_email');
-        if (!email) return;
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
 
         const newStatus = item.status === 'active' ? 'paused' : 'active';
-        await supabase.from('clients').update({ status: newStatus }).eq('id', item.id).eq('user_email', email);
+        await supabase.from('clients').update({ status: newStatus }).eq('id', item.id);
         onUpdateClient(item.id, { status: newStatus });
         setShowMenu(false);
     };
 
     const handleDelete = async () => {
-        const email = localStorage.getItem('folio_user_email');
-        if (!email) return;
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
 
         if (window.confirm(`Are you sure you want to delete ${item.name}? This cannot be undone.`)) {
-            await supabase.from('clients').delete().eq('id', item.id).eq('user_email', email);
+            await supabase.from('clients').delete().eq('id', item.id);
             onDeleteClient(item.id);
         }
         setShowMenu(false);

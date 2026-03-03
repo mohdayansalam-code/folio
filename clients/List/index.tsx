@@ -28,13 +28,12 @@ const CustomersV1Page = () => {
     });
 
     const fetchState = async () => {
-        const email = localStorage.getItem('folio_user_email');
-        if (!email) return;
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
 
         const { data, error } = await supabase
             .from('clients')
             .select('*')
-            .eq('user_email', email)
             .order('created_at', { ascending: false });
 
         if (data) {
@@ -58,12 +57,12 @@ const CustomersV1Page = () => {
             return;
         }
         setLoading(true);
-        const email = localStorage.getItem('folio_user_email');
-        if (!email) return setLoading(false);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return setLoading(false);
 
         const { data, error } = await supabase.from('clients').insert({
             name: "New Client",
-            user_email: email,
+            user_id: user.id,
             status: 'active'
         }).select('id').single();
 

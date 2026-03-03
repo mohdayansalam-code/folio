@@ -1,5 +1,7 @@
+import { useState, useEffect } from "react";
 import Icon from "@/components/Icon";
 import Link from "next/link";
+import { supabase } from "@/utils/supabase";
 
 type TaskCardProps = {
     item: any;
@@ -9,6 +11,27 @@ type TaskCardProps = {
 };
 
 const TaskCard = ({ item, onMove, isMutating, clients }: TaskCardProps) => {
+
+    const [stats, setStats] = useState({ impressions: 0, comments: 0, meetings: 0 });
+
+    useEffect(() => {
+        if (item.status === 'published' && item.id) {
+            supabase
+                .from('performance')
+                .select('impressions, comments, meetings')
+                .eq('draft_id', item.id)
+                .then(({ data }) => {
+                    if (data && data.length > 0) {
+                        const sums = data.reduce((acc: any, curr: any) => ({
+                            impressions: acc.impressions + (curr.impressions || 0),
+                            comments: acc.comments + (curr.comments || 0),
+                            meetings: acc.meetings + (curr.meetings || 0),
+                        }), { impressions: 0, comments: 0, meetings: 0 });
+                        setStats(sums);
+                    }
+                });
+        }
+    }, [item.status, item.id]);
 
     let clientName = "Unknown Client";
     if (item.client_id) {
@@ -95,6 +118,14 @@ const TaskCard = ({ item, onMove, isMutating, clients }: TaskCardProps) => {
                         </span>
                     )}
                 </div>
+
+                {item.status === 'published' && (
+                    <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-n-1 dark:border-white/10 text-xs text-center text-secondary font-medium">
+                        <div><div className="text-blue-1 font-bold">{stats.impressions}</div><div>Views</div></div>
+                        <div><div className="text-green-1 font-bold">{stats.comments}</div><div>Comments</div></div>
+                        <div><div className="text-orange-1 font-bold">{stats.meetings}</div><div>Meetings</div></div>
+                    </div>
+                )}
 
                 {renderAction()}
             </div>

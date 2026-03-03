@@ -46,8 +46,8 @@ const ClientBrain = () => {
         let mounted = true;
 
         const fetchClients = async () => {
-            const email = localStorage.getItem('folio_user_email');
-            if (!email) {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
                 if (mounted) setStatus("idle");
                 return;
             }
@@ -56,7 +56,6 @@ const ClientBrain = () => {
                 const { data, error } = await supabase
                     .from('clients')
                     .select('id, name')
-                    .eq('user_email', email)
                     .order('created_at', { ascending: false });
 
                 if (mounted && !error && data && data.length > 0) {
@@ -94,8 +93,10 @@ const ClientBrain = () => {
         let mounted = true;
 
         const hydrateBrain = async () => {
-            const email = localStorage.getItem('folio_user_email');
-            if (!client || !email) return;
+            if (!client) return;
+
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
 
             const currentId = client.id;
             // Strict lockout: Never fetch & overwrite the inputs if we've already loaded this exact client
@@ -110,7 +111,8 @@ const ClientBrain = () => {
                     .eq('client_id', currentId)
                     .single();
 
-                const { data: assetsData } = await supabase.storage.from('client-assets').list(`${email}/${currentId}`);
+                // Wait to upload based on UUIDs going forward, if missing old assets just drop mapping.
+                const { data: assetsData } = await supabase.storage.from('client-assets').list(`${user.id}/${currentId}`);
                 if (mounted && assetsData) {
                     setAssets(assetsData.filter(f => f.name !== '.emptyFolderPlaceholder'));
                 }
@@ -169,8 +171,7 @@ const ClientBrain = () => {
     };
 
     const handleSave = async () => {
-        const email = localStorage.getItem('folio_user_email');
-        if (!client || !email) return;
+        if (!client) return;
 
         setStatus("loading");
 
@@ -207,8 +208,10 @@ const ClientBrain = () => {
     };
 
     const handleFileUpload = async (files: FileList | null) => {
-        const email = localStorage.getItem('folio_user_email');
-        if (!client || !email || !files || files.length === 0) return;
+        if (!client || !files || files.length === 0) return;
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
 
         setUploading(true);
 
@@ -227,7 +230,7 @@ const ClientBrain = () => {
                 continue;
             }
 
-            const path = `${email}/${client.id}/${file.name}`;
+            const path = `${user.id}/${client.id}/${file.name}`;
             const { error: uploadError } = await supabase.storage.from('client-assets').upload(path, file, {
                 upsert: true
             });

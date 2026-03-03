@@ -26,8 +26,8 @@ export default function DraftEditor() {
         const fetchDraft = async () => {
             if (!id || typeof id !== 'string') return;
 
-            const email = localStorage.getItem('folio_user_email');
-            if (!email) {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
                 setNotFound(true);
                 setLoading(false);
                 return;
@@ -37,7 +37,6 @@ export default function DraftEditor() {
                 .from('drafts')
                 .select('*')
                 .eq('id', id)
-                .eq('user_email', email)
                 .single();
 
             if (error || !data) {
@@ -104,15 +103,15 @@ export default function DraftEditor() {
     }, []);
 
     const handleSendForApproval = async () => {
-        const email = localStorage.getItem('folio_user_email');
-        if (!email || !id) return;
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user || !id) return;
 
         setIsRequestingReview(true);
         try {
             const res = await fetch('/api/review/create', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ draft_id: id, user_email: email })
+                body: JSON.stringify({ draft_id: id, user_id: user.id })
             });
             const data = await res.json();
 
